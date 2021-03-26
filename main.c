@@ -47,7 +47,7 @@ void update_cells() {
 	static int temp[LWINWT][LWINHT];
 	memcpy(temp, cellStates, LWINWT * LWINHT * sizeof(int));
 
-	// There is a border of permanently dead cells acting as a border
+	// There is a border of permanently dead cells
 	for (int i = 1; i < LWINHT - 1; i++) {
 		for (int j = 1; j < LWINWT - 1; j++) {
 
