@@ -3,16 +3,16 @@
 #include <SDL.h>
 
 // Define some constants
-#define WINWT 800
-#define WINHT 800
+#define WINWT 700
+#define WINHT 700
 #define WINTT "CGOL"
 
-#define LWINWT 100
-#define LWINHT 100
+#define LWINWT 50
+#define LWINHT 50
 
 // Store cells in 2d array
 static int cellStates[LWINWT][LWINHT];
-static const int INTERVAL = 1;
+static const int INTERVAL = 250; // In ms
 
 
 void flip_cell(int i, int j) {
@@ -94,24 +94,21 @@ int main(int argc, char* argv[]) {
 
 	int bRunProg = 1;
 	int bRunSim = 0;
-	int nProgTicks = 0;
+
+	Uint32 tSum = 0;
+	Uint32 lastTime = 0;
+	Uint32 currTime = 0;
 
 	int mPosX, mPosY;
-	int bPressed = 0;
 
 	while (bRunProg) {
 		SDL_GetMouseState(&mPosX, &mPosY);
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT: bRunProg = 0; break;
-
-			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONDOWN: 
 				// Normalize and scale mouse pos
-				bPressed = 1;
-				break;
-
-			case SDL_MOUSEBUTTONUP:
-				bPressed = 0;
+				flip_cell((int)((float)mPosX / WINWT * LWINWT), (int)((float)mPosY / WINHT * LWINHT));
 				break;
 
 			case SDL_KEYDOWN:
@@ -124,19 +121,20 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		if (bPressed) {
-			flip_cell((int)((float)mPosX / WINWT * LWINWT), (int)((float)mPosY / WINHT * LWINHT));
-		}
-
 		SDL_SetRenderDrawColor(hRend, 0, 0, 0, SDL_ALPHA_OPAQUE);
 		render_cells(hRend);
 		SDL_RenderPresent(hRend);
 
 		if (bRunSim) {
-			nProgTicks++;
-			if (nProgTicks == INTERVAL) {
+			lastTime = currTime;
+			currTime = SDL_GetTicks();
+
+			tSum += currTime - lastTime; // Time taken for one update
+
+			if (tSum >= INTERVAL) { // Check when INTERVAL milliseconds have been reached
+				printf("%d\n", tSum);
 				update_cells(cellStates);
-				nProgTicks = 0;
+				tSum = 0;
 			}
 		}
 	}
