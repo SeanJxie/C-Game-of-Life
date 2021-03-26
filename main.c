@@ -7,8 +7,8 @@
 #define WINHT 800
 #define WINTT "CGOL"
 
-#define LWINWT 400
-#define LWINHT 400
+#define LWINWT 100
+#define LWINHT 100
 
 // Store cells in 2d array
 static int cellStates[LWINWT][LWINHT];
@@ -95,17 +95,23 @@ int main(int argc, char* argv[]) {
 	int bRunProg = 1;
 	int bRunSim = 0;
 	int nProgTicks = 0;
+
 	int mPosX, mPosY;
+	int bPressed = 0;
 
 	while (bRunProg) {
+		SDL_GetMouseState(&mPosX, &mPosY);
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT: bRunProg = 0; break;
 
 			case SDL_MOUSEBUTTONDOWN:
-				SDL_GetMouseState(&mPosX, &mPosY);
 				// Normalize and scale mouse pos
-				flip_cell((int)((float)mPosX / WINWT * LWINWT), (int)((float)mPosY / WINHT * LWINHT));
+				bPressed = 1;
+				break;
+
+			case SDL_MOUSEBUTTONUP:
+				bPressed = 0;
 				break;
 
 			case SDL_KEYDOWN:
@@ -116,6 +122,10 @@ int main(int argc, char* argv[]) {
 				}
 				break;
 			}
+		}
+
+		if (bPressed) {
+			flip_cell((int)((float)mPosX / WINWT * LWINWT), (int)((float)mPosY / WINHT * LWINHT));
 		}
 
 		SDL_SetRenderDrawColor(hRend, 0, 0, 0, SDL_ALPHA_OPAQUE);
