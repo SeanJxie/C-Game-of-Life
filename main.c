@@ -3,37 +3,32 @@
 #include <SDL.h>
 
 // Define some constants
-#define WINWT 700
-#define WINHT 700
+#define WINWT 1000
+#define WINHT 1000
 #define WINTT "CGOL"
 
-#define LWINWT 50
-#define LWINHT 50
+#define LWINWT 1000
+#define LWINHT 1000
+
 
 // Store cells in 2d array
 static int cellStates[LWINWT][LWINHT];
-static const int INTERVAL = 250; // In ms
+static const int INTERVAL = 0; // In ms
 
-
-void flip_cell(int i, int j) {
-	// Set cell value to not itself
-	cellStates[i][j] = !cellStates[i][j];
-}
 
 
 void render_cells(SDL_Renderer* r) {
 	for (int i = 0; i < LWINHT; i++) {
 		for (int j = 0; j < LWINWT; j++) {
 			if (cellStates[i][j]) {
-				SDL_SetRenderDrawColor(r, 255, 255, 255, SDL_ALPHA_OPAQUE);
+				SDL_SetRenderDrawColor(r, 0, 255, 0, SDL_ALPHA_OPAQUE);
+			}
+			else if (i == 0 || j == 0 || i == LWINWT - 1 || j == LWINHT - 1) {
+				SDL_SetRenderDrawColor(r, 255, 0, 0, SDL_ALPHA_OPAQUE);
+
 			}
 			else {
 				SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
-			}
-
-			if (i == 0 || j == 0 || i == LWINWT - 1 || j == LWINHT - 1)
-			{
-				SDL_SetRenderDrawColor(r, 0, 255, 255, SDL_ALPHA_OPAQUE);
 			}
 
 			SDL_RenderDrawPoint(r, i, j);
@@ -62,13 +57,12 @@ void update_cells() {
 			if (temp[i][j + 1]) living++;
 			if (temp[i + 1][j + 1]) living++;
 				
-
 			if (temp[i][j] && !(living == 2 || living == 3)) {
-				flip_cell(i, j);
+				cellStates[i][j] = 0;
 			}
 			
 			else if (!temp[i][j] && living == 3) {
-				flip_cell(i, j);
+				cellStates[i][j] = 1;
 			}
 		}
 	}
@@ -87,9 +81,19 @@ int main(int argc, char* argv[]) {
 	printf("Loading array\n");
 	for (int i = 0; i < LWINHT; i++) {
 		for (int j = 0; j < LWINWT; j++) {
-			cellStates[i][j] = rand() % 2 == 0;
+			cellStates[i][j] = 1;
 		}
 	}
+
+	// r-pentomino
+	/*int mid = (int)LWINWT / 2 - 1;
+	cellStates[mid][mid] = 1;
+	cellStates[mid][mid + 1] = 1;
+	cellStates[mid][mid - 1] = 1;
+	cellStates[mid - 1][mid] = 1;
+	cellStates[mid + 1][mid - 1] = 1;*/
+
+	
 	printf("Load complete\n");
 
 	int bRunProg = 1;
@@ -100,22 +104,34 @@ int main(int argc, char* argv[]) {
 	Uint32 currTime = 0;
 
 	int mPosX, mPosY;
+	int genCount = 0;
+
+	printf("GENERATION: %d | INITIAL\n", genCount);
 
 	while (bRunProg) {
 		SDL_GetMouseState(&mPosX, &mPosY);
+
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT: bRunProg = 0; break;
 			case SDL_MOUSEBUTTONDOWN: 
 				// Normalize and scale mouse pos
-				flip_cell((int)((float)mPosX / WINWT * LWINWT), (int)((float)mPosY / WINHT * LWINHT));
+				cellStates[(int)((float)mPosX / WINWT * LWINWT)][(int)((float)mPosY / WINHT * LWINHT)] ^= 1;
 				break;
 
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.sym) {
-				case SDLK_SPACE:
-					bRunSim = !bRunSim;
+				case SDLK_SPACE: bRunSim = !bRunSim; break;
+				case SDLK_RIGHT:
+					// Manual iterate
+					if (!bRunSim) {
+						genCount++;
+						printf("GENERATION: %d | MANUAL\n", genCount);
+						update_cells(cellStates);
+						tSum = 0;
+					}
 					break;
+				case SDLK_ESCAPE: bRunProg = 0; break;
 				}
 				break;
 			}
@@ -132,7 +148,8 @@ int main(int argc, char* argv[]) {
 			tSum += currTime - lastTime; // Time taken for one update
 
 			if (tSum >= INTERVAL) { // Check when INTERVAL milliseconds have been reached
-				printf("%d\n", tSum);
+				genCount++;
+				printf("GENERATION: %d | AUTO | DELAY(MS): %d\n", genCount, tSum);
 				update_cells(cellStates);
 				tSum = 0;
 			}
