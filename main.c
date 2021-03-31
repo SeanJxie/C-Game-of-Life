@@ -7,12 +7,11 @@
 #define WINHT 1000
 #define WINTT "CGOL"
 
-#define LWINWT 1000
-#define LWINHT 1000
-
+#define LWINWT 200
+#define LWINHT 200
 
 // Store cells in 2d array
-static int cellStates[LWINWT][LWINHT];
+static int cellStates[LWINHT][LWINWT];
 static const int INTERVAL = 0; // In ms
 
 
@@ -39,7 +38,7 @@ void render_cells(SDL_Renderer* r) {
 
 void update_cells() {
 	// We don't want changes made in the array to affect other changes during the same time period
-	static int temp[LWINWT][LWINHT];
+	static int temp[LWINHT][LWINWT];
 	memcpy(temp, cellStates, LWINWT * LWINHT * sizeof(int));
 
 	// There is a border of permanently dead cells
@@ -71,17 +70,18 @@ void update_cells() {
 
 int main(int argc, char* argv[]) {
 	SDL_Init(SDL_INIT_VIDEO);
-	SDL_Window* hWin = SDL_CreateWindow(WINTT, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINWT, WINHT, SDL_WINDOW_SHOWN);
+	SDL_Window* hWin = SDL_CreateWindow(WINTT, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINWT, WINHT, SDL_WINDOW_RESIZABLE);
 	SDL_Renderer* hRend = SDL_CreateRenderer(hWin, -1, SDL_RENDERER_SOFTWARE);
 
 	SDL_RenderSetLogicalSize(hRend, LWINWT, LWINHT);
 	SDL_Event event;
 
+	printf("GRID DIMENSIONS: (%d, %d)\n", LWINWT, LWINHT);
 	// Init and fill with 0
 	printf("Loading array\n");
 	for (int i = 0; i < LWINHT; i++) {
 		for (int j = 0; j < LWINWT; j++) {
-			cellStates[i][j] = 1;
+			cellStates[i][j] = 0;
 		}
 	}
 
