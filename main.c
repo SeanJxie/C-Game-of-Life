@@ -12,6 +12,7 @@
 
 // Store cells in 2d array
 static int cellStates[LWINHT][LWINWT];
+
 static const int INTERVAL = 0; // In ms
 
 
@@ -46,20 +47,20 @@ void update_cells() {
 		for (int j = 1; j < LWINWT - 1; j++) {
 
 			int living = 0;
-			
-			if (temp[i - 1][j]) living++;
-			if (temp[i + 1][j]) living++;
-			if (temp[i - 1][j - 1]) living++;
-			if (temp[i][j - 1]) living++; 
-			if (temp[i + 1][j - 1]) living++;
-			if (temp[i - 1][j + 1]) living++;
-			if (temp[i][j + 1]) living++;
-			if (temp[i + 1][j + 1]) living++;
-				
+
+			living += temp[i - 1][j];
+			living += temp[i + 1][j];
+			living += temp[i - 1][j - 1];
+			living += temp[i][j - 1];
+			living += temp[i + 1][j - 1];
+			living += temp[i - 1][j + 1];
+			living += temp[i][j + 1];
+			living += temp[i + 1][j + 1];
+
 			if (temp[i][j] && !(living == 2 || living == 3)) {
 				cellStates[i][j] = 0;
 			}
-			
+
 			else if (!temp[i][j] && living == 3) {
 				cellStates[i][j] = 1;
 			}
@@ -93,7 +94,7 @@ int main(int argc, char* argv[]) {
 	cellStates[mid - 1][mid] = 1;
 	cellStates[mid + 1][mid - 1] = 1;*/
 
-	
+
 	printf("Load complete\n");
 
 	int bRunProg = 1;
@@ -114,7 +115,7 @@ int main(int argc, char* argv[]) {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT: bRunProg = 0; break;
-			case SDL_MOUSEBUTTONDOWN: 
+			case SDL_MOUSEBUTTONDOWN:
 				// Normalize and scale mouse pos
 				cellStates[(int)((float)mPosX / WINWT * LWINWT)][(int)((float)mPosY / WINHT * LWINHT)] ^= 1;
 				break;
@@ -150,7 +151,11 @@ int main(int argc, char* argv[]) {
 			if (tSum >= INTERVAL) { // Check when INTERVAL milliseconds have been reached
 				genCount++;
 				printf("GENERATION: %d | AUTO | DELAY(MS): %d\n", genCount, tSum);
+
+
 				update_cells(cellStates);
+
+
 				tSum = 0;
 			}
 		}
